@@ -1,0 +1,25 @@
+#!/bin/bash
+FILE=""
+OPTSTRING="f:h"
+while getopts ${OPTSTRING} opt; do
+	case ${opt} in
+		f)
+			FILE=${OPTARG}
+			;;
+		h)
+			echo "Run this from the location you decompiled in"
+			printf "f : FILE\n"
+			echo "See file for more details"
+			exit
+			;;
+	esac
+done
+
+if [[ -z $FILE ]]; then
+	echo "Specify a filename"
+	exit
+fi
+
+echo $FILE
+apktool b --use-aapt -d $FILE
+jarsigner -sigalg SHA1withRSA -digestalg SHA1 -keystore ~/modding/my-release-key.keystore $PWD/$FILE/dist/$FILE.apk alias_name -storepass Mypass
