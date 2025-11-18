@@ -1,14 +1,18 @@
 #!/bin/bash
 FILE=""
-OPTSTRING="f:h"
+PACKAGE=""
+OPTSTRING="f:p:h"
 while getopts ${OPTSTRING} opt; do
 	case ${opt} in
 		f)
 			FILE=${OPTARG}
 			;;
+		p)
+			PACKAGE=${OPTARG}
+			;;
 		h)
 			echo "Run this from the location you decompiled in"
-			printf "f : FILE\n"
+			printf "f : FILE\np : PACKAGE to uninstall\n"
 			echo "See file for more details"
 			exit
 			;;
@@ -20,6 +24,15 @@ if [[ -z $FILE ]]; then
 	exit
 fi
 
+#uninstall the package so we can clean install
+#If we do not do this, our app will not install over the current
+if [[ -n $PACKAGE ]]; then
+	sudo waydroid shell pm uninstall $PACKAGE
+else
+	echo "CAREFUL! We didn't uninstall the old version"
+fi
+
 echo $FILE
 apktool b --use-aapt -d $FILE
 jarsigner -sigalg SHA1withRSA -digestalg SHA1 -keystore ~/modding/my-release-key.keystore $PWD/$FILE/dist/$FILE.apk alias_name -storepass Mypass
+waydroid app install $PWD/$FILE/dist/$FILE.apk
