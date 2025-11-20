@@ -1,7 +1,8 @@
 #!/bin/bash
 FILE=""
 PACKAGE=""
-OPTSTRING="f:p:h"
+SDK="$HOME/Android/Sdk/build-tools/36.1.0"
+OPTSTRING="f:p:s:h"
 while getopts ${OPTSTRING} opt; do
 	case ${opt} in
 		f)
@@ -10,9 +11,10 @@ while getopts ${OPTSTRING} opt; do
 		p)
 			PACKAGE=${OPTARG}
 			;;
+
 		h)
 			echo "Run this from the location you decompiled in"
-			printf "f : FILE\np : PACKAGE to uninstall\n"
+			printf "f : FILE\np : PACKAGE to uninstall\ns : Android SDK path\n"
 			echo "See file for more details"
 			exit
 			;;
@@ -34,5 +36,18 @@ fi
 
 echo $FILE
 apktool b --use-aapt -d $FILE
-jarsigner -sigalg SHA1withRSA -digestalg SHA1 -keystore ~/modding/my-release-key.keystore $PWD/$FILE/dist/$FILE.apk alias_name -storepass Mypass
-waydroid app install $PWD/$FILE/dist/$FILE.apk
+
+TARGET="$FILE/dist/$FILE.apk"
+SIGN_TARGET="$TARGET""_out.apk"
+
+ALIGN="$SDK/zipalign -p 4 $TARGET $SIGN_TARGET"
+rm $SIGN_TARGET
+echo $ALIGN
+eval $ALIGN
+
+SIGN="$SDK/apksigner sign -ks ~/modding/my-release-key.keystore --ks-pass pass:Mypass $SIGN_TARGET"
+#jarsigner -sigalg SHA1withRSA -digestalg SHA1 -keystore ~/modding/my-release-key.keystore $PWD/$FILE/dist/$FILE.apk alias_name -storepass Mypass
+echo $SIGN
+eval $SIGN
+
+waydroid app install $PWD/$SIGN_TARGET
