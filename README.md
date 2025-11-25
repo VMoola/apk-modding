@@ -24,13 +24,16 @@ If an app is already installed within waydroid, we can grab the apk directly fro
 sudo cp ~/.local/share/waydroid/data/app/[app_hash]/[package_name]/base.apk
 ```
 
-In the case that an app is 'split', we can install this apk https://github.com/AbdurazaaqMohammed/AntiSplit-M to merge it.
-We can output that apk to a convenient location to copy it out of the waydroid device to host.
+In the case that an app is 'split', we have some extra steps to cleanly recompile.
 
 ```
-sudo - i    //so tab-autofill works
-cp /home/[usr]/.local/share/waydroid/data/media/0/[output] /home/[usr]/[wherever]
+sudo cp ~/.local/share/waydroid/data/app/[app_hash]/[package_name]/*.apk .
+apktool d -f [do all split apks one by one]
+cp -rn [do all split apks one by one]/* [merged_dir]/.
 ```
+
+Then, in order to have the linker locate everything, we must add all the apktool.yml 'doNotCompress' sections to the base apktool.yml.
+We also must make sure we remove both android:requiredSplitTypes and android:splitTypes from the AndroidManifest.xml.
 
 # Step 2: Decompile the APK
 Apktool decompiles: apktool d -f [file].apk
